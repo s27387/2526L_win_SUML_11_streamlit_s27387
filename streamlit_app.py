@@ -1,66 +1,39 @@
 import streamlit as st
-import pandas as pd
-import time
-import matplotlib as plt
-import os
-# zaczynamy od zaimportowania bibliotek
 
-st.success('Gratulacje! Z powodzeniem uruchomiłeś aplikację')
-# streamlit jest wykorzystywany do tworzenia aplikacji
-# z tego powodu dobrą praktyką jest informowanie użytkownika o postępie, błędach, etc.
+st.set_page_config(
+    page_title="Właściwy tytuł strony",
+    layout="centered",
+)
+st.title("Nagłówek aplikacji")
+st.image(
+    "https://www.webopedia.com/wp-content/uploads/2010/07/what-is-a-computer-cover-scaled.webp",
+    use_container_width=True
+)
+with st.expander("O aplikacji – kliknij, aby rozwinąć", expanded=True):
+    st.markdown(
+        """
+        Funkcje:
 
-# Inne przykłady do wypróbowania:
-# st.balloons() # animowane balony ;)
-# st.error('Błąd!') # wyświetla informację o błędzie
-# st.warning('Ostrzeżenie, działa, ale chyba tak sobie...')
-# st.info('Informacja...')
-# st.success('Udało się!')
-
-# st.spinner()
-# with st.spinner(text='Pracuję...'):
-    # time.sleep(2)
-    # st.success('Done')
-# możemy dzięki temu "ukryć" późniejsze ładowanie aplikacji
-
-st.title('Lab05. Streamlit')
-# title, jak sama nazwa wskazuje, używamy do wyświetlenia tytułu naszej aplikacji
-
-st.header('Wprowadzenie do zajęć')
-# header to jeden z podtytułów wykorzystywnaych w Streamlit
-
-st.subheader('O Streamlit')
-# subheader to jeden z podtytułów wykorzystywnaych w Streamlit
-
-st.text('To przykładowa aplikacja z wykorzystaniem Streamlit')
-# text używamy do wyświetlenia dowolnego tekstu. Można korzystać z polskich znaków.
-
-st.write('Streamlit jest biblioteką pozwalającą na uruchomienie modeli uczenia maszynowego.')
-# write używamy również do wyświetlenia tekstu, różnica polega na formatowaniu.
-
-st.code("st.write()", language='python')
-# code może nam się czasami przydać, jeżeli chcielibyśmy pokazać np. klientowi fragment kodu, który wykorzystujemy w aplikacji
-
-with st.echo():
-    st.write("Echo")
-# możemy też to zrobić prościej używając echo - pokazujemy kod i równocześnie go wykonujemy
-
-df = pd.read_csv("DSP_4.csv", sep = ';')
-st.dataframe(df)
-# musimy tylko pamiętać o właściwym określeniu separatora (w tym wypadku to średnik)
-# masz problem z otworzeniem pliku? sprawdź w jakim katalogu pracujesz i dodaj tam plik (albo co bardziej korzystne - zmień katalog pracy)
-# os.getcwd() # pokaż bieżący katalog
-# os.chdir("") # zmiana katalogu
+        1.  Wydźwięk emocjonalny: Analiza sentymentu tekstu (ang.) pozytywny / negatywny.
+        2.  Tłumaczenie EN → DE: Tłumaczenie tekstu z angielskiego na niemiecki.
+ 
+        Instrukcja obsługi:
+        1. Wybierz opcję z listy poniżej.
+        2. Wpisz tekst w podanym języku.
+        3. Kliknij przycisk i poczekaj na wynik.
+        """
+    )
 
 st.header('Przetwarzanie języka naturalnego')
 
 import streamlit as st
-from transformers import pipeline
+from transformers import MarianMTModel, MarianTokenizer, pipeline
 
 option = st.selectbox(
     "Opcje",
     [
         "Wydźwięk emocjonalny tekstu (eng)",
-        "???",
+        "Tłumaczenie tekstu: angielski → niemiecki",
     ],
 )
 
@@ -70,12 +43,14 @@ if option == "Wydźwięk emocjonalny tekstu (eng)":
         classifier = pipeline("sentiment-analysis")
         answer = classifier(text)
         st.write(answer)
-
-st.subheader('Zadanie do wykonania')
-st.write('Wykorzystaj Huggin Face do stworzenia swojej własnej aplikacji tłumaczącej tekst z języka angielskiego na język niemiecki. Zmodyfikuj powyższy kod dodając do niego kolejną opcję, tj. tłumaczenie tekstu. Informacje potrzebne do zmodyfikowania kodu znajdziesz na stronie Huggin Face - https://huggingface.co/docs/transformers/index')
-st.write('🐞 Dodaj właściwy tytuł do swojej aplikacji, może jakieś grafiki?')
-st.write('🐞 Dodaj krótką instrukcję i napisz do czego służy aplikacja')
-st.write('🐞 Wpłyń na user experience, dodaj informacje o ładowaniu, sukcesie, błędzie, itd.')
-st.write('🐞 Na końcu umieść swój numer indeksu')
-st.write('🐞 Stwórz nowe repozytorium na GitHub, dodaj do niego swoją aplikację, plik z wymaganiami (requirements.txt)')
-st.write('🐞 Udostępnij stworzoną przez siebie aplikację (https://share.streamlit.io) a link prześlij do prowadzącego')
+elif option == "Tłumaczenie tekstu: angielski → niemiecki":
+    text = st.text_area(label="Wpisz tekst")
+    if text:
+       with st.spinner("Tłumaczę..."):
+            tokenizer = MarianTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-de")
+            model = MarianMTModel.from_pretrained("Helsinki-NLP/opus-mt-en-de")
+            inputs = tokenizer(text, return_tensors="pt", padding=True)
+            translated = model.generate(**inputs)
+            answer = tokenizer.decode(translated[0], skip_special_tokens=True)
+            st.success(answer)
+st.write("s27387")
